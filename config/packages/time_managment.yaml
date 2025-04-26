@@ -1,0 +1,5 @@
+parameters:
+  time_management:
+    default_hourly_rate: 25.00
+    monthly_hour_limit: 160
+    overtime_rate_percent: 200
