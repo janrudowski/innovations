@@ -44,7 +44,66 @@ class WorkTimeRepository extends ServiceEntityRepository
             ->setParameter('startOfDay', $startOfDay)
             ->setParameter('endOfDay', $endOfDay)
             ->getQuery()
-            ->getResult()
-            ;
+            ->getResult();
+    }
+
+    /**
+     * Find work time entries for an employee within a date range
+     *
+     * @param Employee $employee The employee to check
+     * @param DateTimeInterface $startDate Start of the date range
+     * @param DateTimeInterface $endDate End of the date range
+     * @return WorkTime[] Returns an array of WorkTime objects
+     */
+    public function findByEmployeeAndDateRange(Employee $employee, DateTimeInterface $startDate, DateTimeInterface $endDate): array
+    {
+        $startDateStr = $startDate->format('Y-m-d 00:00:00');
+        $endDateStr = $endDate->format('Y-m-d 23:59:59');
+
+        return $this->createQueryBuilder('w')
+            ->andWhere('w.employee = :employee')
+            ->andWhere('w.timeStart >= :startOfDay')
+            ->andWhere('w.timeStart <= :endOfDay')
+            ->setParameter('employee', $employee->getId(), UuidType::NAME)
+            ->setParameter('startOfDay', $startDateStr)
+            ->setParameter('endOfDay', $endDateStr)
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    /**
+     * Find work time entries that OVERLAP with a specific date
+     * This includes entries that:
+     * - Start on the given date
+     * - End on the given date
+     * - Span across the given date
+     *
+     * @param Employee $employee employee entity
+     * @param DateTimeInterface $date date to check for overlapping work times
+     * @return WorkTime[]
+     */
+    public function findByEmployeeAndDateOverlap(Employee $employee, DateTimeInterface $date): array
+    {
+        $dateString = $date->format('Y-m-d');
+
+        $startOfDay = new \DateTimeImmutable($dateString . ' 00:00:00');
+        $endOfDay = new \DateTimeImmutable($dateString . ' 23:59:59');
+
+        return $this->createQueryBuilder('w')
+            ->andWhere('w.employee = :employee')
+            ->andWhere(
+            // Entry starts on the given date
+                '(w.timeStart >= :startOfDay AND w.timeStart <= :endOfDay) OR '
+                // Entry ends on the given date
+                . '(w.timeEnd >= :startOfDay AND w.timeEnd <= :endOfDay) OR '
+                // Entry spans across the given date
+                . '(w.timeStart <= :startOfDay AND w.timeEnd >= :endOfDay)'
+            )
+            ->setParameter('employee', $employee->getId(), UuidType::NAME)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
+            ->getQuery()
+            ->getResult();
     }
 }
