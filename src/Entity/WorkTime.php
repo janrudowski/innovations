@@ -17,6 +17,12 @@ class WorkTime
     #[ORM\JoinColumn(nullable: false)]
     private ?Employee $employee = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $timeStart = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $timeEnd = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -30,6 +36,30 @@ class WorkTime
     public function setEmployee(?Employee $employee): static
     {
         $this->employee = $employee;
+
+        return $this;
+    }
+
+    public function getTimeStart(): ?\DateTimeImmutable
+    {
+        return $this->timeStart;
+    }
+
+    public function setTimeStart(\DateTimeImmutable $timeStart): static
+    {
+        $this->timeStart = $timeStart;
+
+        return $this;
+    }
+
+    public function getTimeEnd(): ?\DateTimeImmutable
+    {
+        return $this->timeEnd;
+    }
+
+    public function setTimeEnd(\DateTimeImmutable $timeEnd): static
+    {
+        $this->timeEnd = $timeEnd;
 
         return $this;
     }
